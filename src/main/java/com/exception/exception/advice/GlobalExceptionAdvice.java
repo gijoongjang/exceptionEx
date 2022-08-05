@@ -2,7 +2,6 @@ package com.exception.exception.advice;
 
 import com.exception.exception.common.STATUSCODE;
 import com.exception.exception.dto.ErrorResponseDTO;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
@@ -11,8 +10,11 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
+import javax.naming.AuthenticationException;
 import javax.servlet.http.HttpServletRequest;
+import java.nio.file.AccessDeniedException;
 
 @RestControllerAdvice
 public class GlobalExceptionAdvice {
@@ -81,5 +83,35 @@ public class GlobalExceptionAdvice {
                 .path(request.getRequestURI()).build();
 
         return ResponseEntity.badRequest().body(response);
+    }
+
+    @ExceptionHandler(value = {AuthenticationException.class})
+    protected ResponseEntity<ErrorResponseDTO> authenticationException(HttpServletRequest request, AuthenticationException e) {
+        ErrorResponseDTO response = ErrorResponseDTO.builder()
+                .errorCode(STATUSCODE.UNAUTHORIZED)
+                .errorMessage(e.getMessage())
+                .path(request.getRequestURI()).build();
+
+        return ResponseEntity.status(STATUSCODE.UNAUTHORIZED).body(response);
+    }
+
+    @ExceptionHandler(value = {AccessDeniedException.class})
+    protected ResponseEntity<ErrorResponseDTO> accessDeniedException(HttpServletRequest request, AccessDeniedException e) {
+        ErrorResponseDTO response = ErrorResponseDTO.builder()
+                .errorCode(STATUSCODE.FORBIDDEN)
+                .errorMessage(e.getMessage())
+                .path(request.getRequestURI()).build();
+
+        return ResponseEntity.status(STATUSCODE.FORBIDDEN).body(response);
+    }
+
+    @ExceptionHandler(value = {NoHandlerFoundException.class})
+    protected ResponseEntity<ErrorResponseDTO> noHandlerFoundException(HttpServletRequest request, NoHandlerFoundException e) {
+        ErrorResponseDTO response = ErrorResponseDTO.builder()
+                .errorCode(STATUSCODE.NOT_FOUND)
+                .errorMessage(e.getMessage())
+                .path(request.getRequestURI()).build();
+
+        return ResponseEntity.status(STATUSCODE.NOT_FOUND).body(response);
     }
 }
